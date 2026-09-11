@@ -71,9 +71,10 @@ class Tag:
 
     def add_source(self, source: TagSource, tag_json: Dict):
         if tag_json.get("replace", False):
-            self.replaced_by.append(source)
-
-        # Merge values from the mod and add the mod as a source for each entry
+            if source not in self.replaced_by:
+                self.replaced_by.append(source)
+        if source not in self.sources:
+            self.sources.append(source)
         entries = tag_json.get("values", [])
         for entry in entries:
             found = False
@@ -95,8 +96,9 @@ class Tag:
     @classmethod
     def from_json(cls, json, sources: Dict):
         tag = Tag(json['id'])
-        tag.sources = {sources[x] for x in json['sources']}
-        tag.replaced_by = {sources[x] for x in json['replaced_by']}
+        tag.sources = [sources[x] for x in json['sources']]
+        tag.replaced_by = [sources[x] for x in json['replaced_by']]
+        tag.content = [TagEntry.from_json(x, sources) for x in json.get('content', [])]
         return tag
 
 
@@ -108,6 +110,7 @@ class TagContainer:
     entity_type: Dict[str, Tag]
     worldgen_biome: Dict[str, Tag]
     enchantment: Dict[str, Tag]
+    language: Dict[str, Tag]
 
     def __init__(self) -> None:
         super().__init__()
@@ -118,6 +121,7 @@ class TagContainer:
         self.entity_type = {}
         self.worldgen_biome = {}
         self.enchantment = {}
+        self.language = {}
 
     def add_tag(self, tag_type: str, source: TagSource, tag_id: str, tag_json: Dict):
         if source not in self.sources:
@@ -140,6 +144,7 @@ class TagContainer:
             'entity_type': [x.to_json() for x in self.entity_type.values()],
             'worldgen_biome': [x.to_json() for x in self.worldgen_biome.values()],
             'enchantment': [x.to_json() for x in self.enchantment.values()],
+            'language': [x.to_json() for x in self.language.values()]
         }
 
     @classmethod
@@ -165,4 +170,5 @@ class TagContainer:
         tags.entity_type = load_tags('entity_type')
         tags.worldgen_biome = load_tags('worldgen_biome')
         tags.enchantment = load_tags('enchantment')
+        tags.language = load_tags('language')
         return tags

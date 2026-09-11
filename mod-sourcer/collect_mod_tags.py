@@ -11,16 +11,11 @@ from datastructures import *
 build_dir = Path('build')
 
 TAG_PATTERN = re.compile(
-    r"^(?:assets/[^/]+/lang/[a-z]{2}_[a-z]{2,4}(?:_[a-z]+)?\.json|"
+    r"^(?:assets/[^/]+/lang/en_us\.json|"
     r"data/c/tags/(item|block|fluid|entity_type|worldgen/biome|enchantment)/(.*)\.json)$"
 )
 
-
 def load_tags(mod_jar: ZipFile, source: TagSource, tags: TagContainer):
-    """
-    Loads all tags and language files from the given ZIP file,
-    and handles them appropriately.
-    """
     matches = filter(None, (TAG_PATTERN.match(entry) for entry in mod_jar.namelist()))
     for match in matches:
         path = match.group(0)
@@ -30,9 +25,10 @@ def load_tags(mod_jar: ZipFile, source: TagSource, tags: TagContainer):
             parts = path.split('/')
             namespace = parts[1]
             locale = parts[-1].replace('.json', '')
+            tag_type = "language"
+            tag_id = f"{namespace}:{locale}"
 
-            # TODO: Handle lang files here.
-            # tags.add_lang(namespace, source, locale, tag_json)
+            tags.add_tag(tag_type, source, tag_id, {"values": [{"id": k, "translation": v} for k, v in tag_json.items()]})
             continue
 
         tag_type = match.group(1)

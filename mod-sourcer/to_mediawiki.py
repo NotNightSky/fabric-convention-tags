@@ -27,9 +27,31 @@ FLUID_TAGS: str = "Fluid Tags {#fluid-tags}"
 ENTITY_TYPE_TAGS: str = "Entity Type Tags {#entity-type-tags}"
 BIOME_TAGS: str = "Biome Tags {#biome-tags}"
 ENCHANTMENT_TAGS: str = "Enchantment Tags {#enchantment-tags}"
+LANGUAGE_TAGS: str = "Language Tags {#language-tags}"
+
+def generate_language_page(sources, tags: List[Dict], out):
+    entries = []
+    for tag in tags:
+        for content in tag['content']:
+            val = content['value']
+            if isinstance(val, dict):
+                key = val.get('id', '')
+                value = val.get('translation', '')
+            else:
+                key = str(val)
+                value = ''
+            entries.append((key, value, content['sources']))
+    entries.sort(key=lambda x: x[0])
+    print("| Tag | Value | Defined by |", file=out)
+    print("|---|---|---|", file=out)
+    for key, value, srcs in entries:
+        print("|", key, file=out, end='')
+        print("|", '"' + value + '"', file=out, end='')
+        print("|", ", ".join(srcs), file=out, end='')
+        print(" |", file=out)
+
 
 def generate_page(sources, tags: List[Dict], out):
-    # Sort tags by depth first
     tags.sort(key=lambda x: x['id'].count('/'))
     tags.sort(key=itemgetter('id'))
 
@@ -80,10 +102,7 @@ with open('tags.md', 'wt') as out:
     print(file=out)
     generate_page(root['sources'], root['enchantment'], out)
 
-    # print(file=out)
-    # print('===== Sources =====', file=out)
-    # print(file=out)
-    # print("^ Mod ID ^ Name ^ Version ^ URL ^", file=out)
-    #
-    # for source in root['sources'].values():
-    #     print("|", source['id'], "|", source["name"], "|", source["version"], "|", source["url"], "|", file=out)
+    print(file=out)
+    print(LANGUAGE_TAGS, file=out)
+    print(file=out)
+    generate_language_page(root['sources'], root['language'], out)
