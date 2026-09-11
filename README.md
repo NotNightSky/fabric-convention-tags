@@ -1,6 +1,6 @@
 # Fabric Convention Tags
 
-This repository aims to collect [Minecraft tags](https://minecraft.wiki/w/Tag) in the convention namespace `c`, which may be used by multiple mods to express similar things.
+This fork of the fabric-convention-tags aims to extract the conventional tags used by mods and list them in a markdown file which is compatible with the modern fabric docs.
 
 # Use
 
