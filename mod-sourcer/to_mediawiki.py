@@ -9,7 +9,7 @@ def generate_resources_link() -> str :
     resource_lines = []
     for source in root['sources'].values():
         if source['url'] is not None:
-            resource_lines.append(f"    - {source['url']}")
+            resource_lines.append(f"    - {source['url']}: {source['name']}")
     return "\n".join(resource_lines)
 
 FRONTMATTER: str = (
@@ -21,13 +21,19 @@ resources:
 ---""" % generate_resources_link()
 )
 
-ITEM_TAGS: str = "Item Tags {#item-tags}"
-BLOCK_TAGS: str = "Block Tags {#block-tags}"
-FLUID_TAGS: str = "Fluid Tags {#fluid-tags}"
-ENTITY_TYPE_TAGS: str = "Entity Type Tags {#entity-type-tags}"
-BIOME_TAGS: str = "Biome Tags {#biome-tags}"
-ENCHANTMENT_TAGS: str = "Enchantment Tags {#enchantment-tags}"
-LANGUAGE_TAGS: str = "Language Tags {#language-tags}"
+HEADING: str = (
+"""
+This page was automatically generated using a script. See the side bar for the list of mods used. If your item fits into one of these tags, then you should add it to that tag instead of defining your own. If you want your mod's recipes to be compatible with other mods, replace the item in the recipe with #c:tagname. 
+"""
+)
+
+ITEM_TAGS: str = "## Item Tags {#item-tags}"
+BLOCK_TAGS: str = "## Block Tags {#block-tags}"
+FLUID_TAGS: str = "## Fluid Tags {#fluid-tags}"
+ENTITY_TYPE_TAGS: str = "## Entity Type Tags {#entity-type-tags}"
+BIOME_TAGS: str = "## Biome Tags {#biome-tags}"
+ENCHANTMENT_TAGS: str = "## Enchantment Tags {#enchantment-tags}"
+LANGUAGE_TAGS: str = "## Language Tags {#language-tags}"
 
 def generate_language_page(sources, tags: List[Dict], out):
     entries = []
@@ -45,8 +51,8 @@ def generate_language_page(sources, tags: List[Dict], out):
     print("| Tag | Value | Defined by |", file=out)
     print("|---|---|---|", file=out)
     for key, value, srcs in entries:
-        print("|", key, file=out, end='')
-        print("|", '"' + value + '"', file=out, end='')
+        print("|", '`' + key + '`', file=out, end='')
+        print("|", '`"' + value + '"`', file=out, end='')
         print("|", ", ".join(srcs), file=out, end='')
         print(" |", file=out)
 
@@ -62,8 +68,8 @@ def generate_page(sources, tags: List[Dict], out):
             val = content['value']
             tag_value = val['id'] if isinstance(val, dict) else str(val)
 
-            print("|", 'c:' + tag['id'], file=out, end='')
-            print("|", tag_value, file=out, end='')
+            print("|", '`c:' + tag['id'] + '`', file=out, end='')
+            print("|", '`' + tag_value + '`', file=out, end='')
             print("|", ", ".join(content['sources']), file=out, end='')
             print(" |", file=out)
 
@@ -71,6 +77,8 @@ def generate_page(sources, tags: List[Dict], out):
 with open('tags.md', 'wt') as out:
     generate_resources_link()
     print(FRONTMATTER, file=out)
+
+    print(HEADING, file=out)
 
     print(file=out)
     print(ITEM_TAGS, file=out)
