@@ -28,7 +28,7 @@ def load_tags(mod_jar: ZipFile, source: TagSource, tags: TagContainer):
             tag_type = "language"
             tag_id = f"{namespace}:{locale}"
 
-            tags.add_tag(tag_type, source, tag_id, {"values": [{"id": k, "translation": v} for k, v in tag_json.items()]})
+            tags.add_tag(tag_type, source, tag_id, {"values": [{"id": k, "translation": v} for k, v in tag_json.items() if k.split(".").count("c") == 1]})
             continue
 
         tag_type = match.group(1)
