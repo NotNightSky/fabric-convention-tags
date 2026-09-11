@@ -16,6 +16,12 @@ class TagSource:
         self.mod_version = mod_version
         self.mod_url = mod_url
 
+    def __eq__(self, other):
+        return isinstance(other, TagSource) and self.mod_id == other.mod_id
+
+    def __hash__(self):
+        return hash(self.mod_id)
+
     def to_json(self):
         return {
             'id': self.mod_id,
@@ -51,7 +57,11 @@ class TagEntry:
 
     @classmethod
     def from_json(cls, json, sources):
-        resolved_sources = [sources[x] for x in json['sources']]
+        resolved_sources = []
+        for x in json['sources']:
+            s = sources[x]
+            if s not in resolved_sources:
+                resolved_sources.append(s)
         return TagEntry(json['value'], resolved_sources)
 
 
@@ -96,8 +106,18 @@ class Tag:
     @classmethod
     def from_json(cls, json, sources: Dict):
         tag = Tag(json['id'])
-        tag.sources = [sources[x] for x in json['sources']]
-        tag.replaced_by = [sources[x] for x in json['replaced_by']]
+        deduped_sources = []
+        for x in json['sources']:
+            s = sources[x]
+            if s not in deduped_sources:
+                deduped_sources.append(s)
+        tag.sources = deduped_sources
+        deduped_replaced = []
+        for x in json['replaced_by']:
+            s = sources[x]
+            if s not in deduped_replaced:
+                deduped_replaced.append(s)
+        tag.replaced_by = deduped_replaced
         tag.content = [TagEntry.from_json(x, sources) for x in json.get('content', [])]
         return tag
 
@@ -124,7 +144,11 @@ class TagContainer:
         self.language = {}
 
     def add_tag(self, tag_type: str, source: TagSource, tag_id: str, tag_json: Dict):
-        if source not in self.sources:
+        for existing in self.sources:
+            if existing.mod_id == source.mod_id:
+                source = existing
+                break
+        else:
             self.sources.append(source)
             self.sources.sort(key=lambda x: x.mod_id)
 
